@@ -27,7 +27,7 @@ import redis.clients.jedis.Tuple;
 
 /**
  * 
- * Redis分片公共类
+ * Redis分布式公共类
  * 
  * 公共类方法简单封装，支持pojo存储，key为String，value为Object
  *

@@ -1,7 +1,9 @@
 package com.leon.redis.serializer;
 /**
  * 
- *  @author Leon.Song
+ * 把序列化单独定义为普通类而非公共静态类是为了兼容任何序列化实现
+ * 
+ * @author Leon.Song
  *
  * @param <T>
  */

@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * 
- * ShardedRedisPool客户端，用于初始化客户端， redis分片
+ * ShardedRedisPool客户端，用于初始化客户端， redis分布式
  * 
  * 配置参数可以提取到properties文件中
  * 

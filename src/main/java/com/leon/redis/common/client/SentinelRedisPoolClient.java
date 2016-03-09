@@ -9,7 +9,7 @@ import redis.clients.jedis.JedisSentinelPool;
 /**
  * 
  * Redis哨兵Sentinel主从客户端,用于初始化客户端, redis未分片
- * 也可以基于redis分片做哨兵主从，
+ * 也可以基于redis分布式做哨兵主从，
  * 参照https://github.com/warmbreeze/sharded-jedis-sentinel-pool
  * 
  * 配置参数可以提取到properties文件中
