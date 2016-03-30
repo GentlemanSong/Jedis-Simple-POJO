@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import com.leon.redis.common.client.RedisPoolClient;
 import com.leon.redis.serializer.JdkSerializationRedisSerializer;
 import com.leon.redis.serializer.RedisSerializer;
@@ -37,6 +36,7 @@ public class RedisUtil {
 	private static Log log = LogFactory.getLog(RedisUtil.class);
 	private static RedisSerializer<String> keyRedisSerializer;
 	private static RedisSerializer<Object> valueRedisSerializer;
+	
 
 	static {
 		// 初始化jedisPool，keyRedisSerializer, valueRedisSerializer
@@ -86,7 +86,11 @@ public class RedisUtil {
 	 * @throws Exception
 	 */
 	private static Object valueRedisDeserializer(byte[] value) throws Exception {
-		return valueRedisSerializer.deserialize(value);
+		if(null!=value){
+			return valueRedisSerializer.deserialize(value);
+		}else{
+			return null;
+		}
 	}
 
 	private static Map<byte[], byte[]> byteMapConvertFromObject(Map<String, Object> hash) throws Exception{
@@ -148,7 +152,7 @@ public class RedisUtil {
 		return result;
 	}
 
-	public String setex(String key, int seconds, Object value) {
+	public static String setex(String key, int seconds, Object value) {
 		String result = null;
 		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
 		if (jedis == null) {
@@ -186,6 +190,28 @@ public class RedisUtil {
 		return result;
 	}
 
+	/**
+	 * 获取自增或自减key的值
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static Object getNumber(String key){
+		Object result = null;
+		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
+		if (jedis == null) {
+			return result;
+		}
+		try {
+			result = jedis.get(key);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			jedis.close();
+		}
+		return result;
+	}
+	
 	public static Boolean exists(String key) {
 		Boolean result = false;
 		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
@@ -843,7 +869,31 @@ public class RedisUtil {
 		}
 		return result;
 	}
-
+	
+	/**
+	 * 批量添加元素
+	 * 
+	 * @param key
+	 * @param values
+	 * @return
+	 */
+	public static Long saddBatch(String key , Object... values ){
+		Long result = 0L;
+		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
+		if(jedis == null){
+			return result;
+		}
+		try {
+			for(int i = 0;i < values.length;i++){
+				jedis.sadd(keyRedisSerializer(key), valueRedisSerializer(values[i]));
+				result ++;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
 	public static Set<Object> smembers(String key) {
 		Set<Object> result = null;
 		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();

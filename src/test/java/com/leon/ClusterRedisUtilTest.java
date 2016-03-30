@@ -2,49 +2,111 @@ package com.leon;
 
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Test;
+
+import com.leon.redis.common.ClusterRedisUtil;
 
 public class ClusterRedisUtilTest {
 
 	@Test
 	public void testSet() {
-		
+		//向redis中set key及对应value  对已存在的可以进行value覆盖
+		String set = ClusterRedisUtil.set("test", "test");
+		System.out.println(set);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testSetex() {
+		//set数据存在时间，单位为seconds 对已存在的可以进行value覆盖
+		String result = ClusterRedisUtil.setex("testSetex",60,"setex");
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testGet() {
+		//通过key获取对应value
+		Object object = ClusterRedisUtil.get("test");
+		System.out.println(object);
 		fail("Not yet implemented");
+		//测试通过
+	}
+	
+	@Test
+	public void testGetNumber(){
+		//对于自增或自减key的value的获取
+		//通过key获取对应value
+		Object object = ClusterRedisUtil.getNumber("testCr");
+		System.out.println(object);
+		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testExists() {
+		//检查key是否存在
+		boolean flag = ClusterRedisUtil.exists("test");
+		boolean flag1 = ClusterRedisUtil.exists("test0");
+		System.out.println(flag);
+		System.out.println(flag1);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testType() {
+		//获取目标key存储的数据类型 
+		//返回值
+		//none (key不存在)
+		//string (字符串)
+		//list (列表)
+		//set (集合)
+		//zset (有序集)
+		//hash (哈希表)
+		String result = ClusterRedisUtil.type("test");
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testExpire() {
+		//为给定key设置生存时间，如果当前key有生存时间，则更新。成功返回1，key不存在或者redis版本不支持则返回0。
+		Long result = ClusterRedisUtil.expire("test2", 60);
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testExpireAt() {
+		ClusterRedisUtil.set("testExpireAt", "shijian");
+		//为给定key设置生存时间，设置的时间以unix时间戳为参数
+		//当设置成功时返回1，key不存在或者无法设置时返回0
+		Long expireTime = (System.currentTimeMillis()/1000L)+60;
+		System.out.println(expireTime);
+		Long result = ClusterRedisUtil.expireAt("testExpireAt", expireTime);
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testTtl() {
+		//获取给定key的剩余生存时间
+		//如果给定key不存在返回-2，给定key存在但没有设置生存时间返回-1，有key有时间按秒返回时间
+		Long result = ClusterRedisUtil.ttl("testExpireAt");
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
@@ -74,22 +136,38 @@ public class ClusterRedisUtilTest {
 
 	@Test
 	public void testDecrBy() {
+		//返回自减后的值
+		Long result = ClusterRedisUtil.decrBy("testCr", 2);
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testDecr() {
+		//返回自减后的值
+		Long result = ClusterRedisUtil.decr("testCr");
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testIncrBy() {
+		//返回值为自增后的key的值
+		Long result = ClusterRedisUtil.incrBy("testCr",5);
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testIncr() {
+		//返回值为自增后的key的值
+		Long result = ClusterRedisUtil.incr("testCr");
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
@@ -104,12 +182,21 @@ public class ClusterRedisUtilTest {
 
 	@Test
 	public void testHset() {
+		//HSET key field value将哈希表 key 中的域 field 的值设为 value
+		//创建新域且值设置成功，返回1，覆盖旧值且成功返回0
+		Long result = ClusterRedisUtil.hset("hash", "jfen", "jf.10086.com");
+		System.out.println(result);		
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testHget() {
+		//HGET key field返回哈希表 key 中给定域 field 的值。有值返回值，没值返回null
+		Object object = ClusterRedisUtil.hget("hash", "jifen");
+		System.out.println(object);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
@@ -119,12 +206,28 @@ public class ClusterRedisUtilTest {
 
 	@Test
 	public void testHmset() {
+		//HMSET key field value [field value ...] 同时将多个 field-value (域-值)对设置到哈希表 key 中。此命令会覆盖哈希表中已存在的域。
+		//命令执行成功返回ok 当 key 不是哈希表(hash)类型时，返回一个错误
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("baidu", "www.baidu.com");
+		map.put("google", "www.google.com");
+		map.put("asiainfo", "www.asiainfo.com.cn");
+		Object result = ClusterRedisUtil.hmset("hash", map);
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testHmget() {
+		//HMGET key field [field ...] 返回哈希表 key 中，一个或多个给定域的值。如果给定的域不存在于哈希表，那么返回null。
+		//返回值：一个包含多个给定域的关联值的表，表值的排列顺序和给定域参数的请求顺序一样。
+		List<Object> list = ClusterRedisUtil.hmget("hash", "jifen","baidu","google","yaohu");
+		for (Object object : list) {
+			System.out.println(object);
+		}
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
@@ -139,11 +242,17 @@ public class ClusterRedisUtilTest {
 
 	@Test
 	public void testDel() {
+		Long result = ClusterRedisUtil.del("name");
+		System.out.println(result);
 		fail("Not yet implemented");
 	}
 
 	@Test
 	public void testHdel() {
+		//HDEL key field [field ...] 删除哈希表 key 中的一个或多个指定域，不存在的域将被忽略。
+		//返回被成功移除的域，不包括忽略的域
+		Long result = ClusterRedisUtil.hdel("hash", "baidu");
+		System.out.println(result);
 		fail("Not yet implemented");
 	}
 
@@ -219,22 +328,55 @@ public class ClusterRedisUtilTest {
 
 	@Test
 	public void testSadd() {
+		//返回值被添加的元素数量
+		Object value = "\"zhangsan\" \"lisi\" \"wangwu\" \"zhaoliu\" \"who\"";
+		System.out.println(value);
+		Long result = ClusterRedisUtil.sadd("name", value);
+		System.out.println(result);
+		ClusterRedisUtil.sadd("name", "zhangsan");
+		ClusterRedisUtil.sadd("name", "lisi");
+		ClusterRedisUtil.sadd("name", "wangwu");
+		ClusterRedisUtil.sadd("name", "zhaoliu");
+		ClusterRedisUtil.sadd("name", "who");		
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
-	public void testSmembers() {
+	public void testSaddBatch(){
+		//根据key批量添加元素
+		Long result = ClusterRedisUtil.saddBatch("testBatch1", "zhangsan","lisi","wangwu","zhaoliu");
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
+	}
+		
+	@Test
+	public void testSmembers() {
+		//获取集合全部元素
+		Set<Object> set = ClusterRedisUtil.smembers("testBatch1");
+		System.out.println(set);
+		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testSrem() {
+		//删除集合中的元素，不存在的元素会被忽略
+		Object value = "\"zhangsan\" \"lisi\" \"wangwu\" \"zhaoliu\" \"who\"";
+		Long result = ClusterRedisUtil.srem("name", value);
+		System.out.println(result);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
 	public void testSpop() {
+		//移除集合中的随机元素,返回随机移除的元素
+		Object object = ClusterRedisUtil.spop("testBatch");
+		System.out.println(object);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test
@@ -249,7 +391,11 @@ public class ClusterRedisUtilTest {
 
 	@Test
 	public void testSrandmember() {
+		//获取集合中的一个随机元素
+		Object object = ClusterRedisUtil.srandmember("name");
+		System.out.println(object);
 		fail("Not yet implemented");
+		//测试通过
 	}
 
 	@Test

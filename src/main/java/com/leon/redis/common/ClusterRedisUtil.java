@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 
 import com.leon.redis.common.client.ClusterRedisPoolClient;
 import com.leon.redis.serializer.JdkSerializationRedisSerializer;
@@ -35,7 +36,7 @@ public class ClusterRedisUtil {
 	//private static JedisCluster jedisCluster;
 	private static RedisSerializer<String> keyRedisSerializer;
 	private static RedisSerializer<Object> valueRedisSerializer;
-
+	
 	static {
 		keyRedisSerializer = new StringRedisSerializer();
 		valueRedisSerializer = new JdkSerializationRedisSerializer();
@@ -62,7 +63,7 @@ public class ClusterRedisUtil {
 	private static String keyRedisDeserializer(byte[] key) throws Exception {
 		return keyRedisSerializer.deserialize(key);
 	}
-
+	
 	/**
 	 * value序列化
 	 * 
@@ -75,6 +76,17 @@ public class ClusterRedisUtil {
 		return valueRedisSerializer.serialize(value);
 	}
 
+	@Test
+	public void testSer(){
+		valueRedisSerializer = new JdkSerializationRedisSerializer();
+		Object value = 1;
+		try {
+			System.out.println(valueRedisSerializer.serialize(value));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * value反序列化
 	 * 
@@ -83,9 +95,23 @@ public class ClusterRedisUtil {
 	 * @throws Exception
 	 */
 	private static Object valueRedisDeserializer(byte[] value) throws Exception {
-		return valueRedisSerializer.deserialize(value);
+		if(null!=value){
+			return valueRedisSerializer.deserialize(value);
+		}else{
+			return null;
+		}
 	}
-
+	@Test
+	public void testDes(){
+		valueRedisSerializer = new JdkSerializationRedisSerializer();
+		try {
+			byte[] value = valueRedisSerializer.serialize(1);
+			System.out.println(valueRedisSerializer.deserialize(value));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	private static Map<byte[], byte[]> byteMapConvertFromObject(Map<String, Object> hash) throws Exception {
 		Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
 		for (Entry<String, Object> entry : hash.entrySet()) {
@@ -147,7 +173,7 @@ public class ClusterRedisUtil {
 		return result;
 	}
 
-	public String setex(String key, int seconds, Object value) {
+	public static String setex(String key, int seconds, Object value) {
 		String result = null;
 		try {
 			result = ClusterRedisPoolClient.getJedisClusterInstance().setex(keyRedisSerializer(key), seconds, valueRedisSerializer(value));
@@ -173,6 +199,23 @@ public class ClusterRedisUtil {
 		return result;
 	}
 
+	/**
+	 * 获取自增或自减key的值
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static Object getNumber(String key){
+		Object result = null;
+		try {
+			result = ClusterRedisPoolClient.getJedisClusterInstance().get(key);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 	public static Boolean exists(String key) {
 		Boolean result = false;
 		try {
@@ -291,6 +334,7 @@ public class ClusterRedisUtil {
 		Long result = null;
 		try {
 			result = ClusterRedisPoolClient.getJedisClusterInstance().decrBy(keyRedisSerializer(key), integer);
+			System.out.println(keyRedisSerializer(key));
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -586,6 +630,26 @@ public class ClusterRedisUtil {
 		Long result = null;
 		try {
 			result = ClusterRedisPoolClient.getJedisClusterInstance().sadd(keyRedisSerializer(key), valueRedisSerializer(value));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return result;
+	}
+	
+	/**
+	 * 批量添加元素
+	 * 
+	 * @param key
+	 * @param values
+	 * @return
+	 */
+	public static Long saddBatch(String key, Object... values) {
+		Long result = 0L;
+		try {
+			for(int i = 0;i < values.length;i++){
+				ClusterRedisPoolClient.getJedisClusterInstance().sadd(keyRedisSerializer(key), valueRedisSerializer(values[i]));
+				result ++;
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}

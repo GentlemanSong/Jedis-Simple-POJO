@@ -41,7 +41,8 @@ public class RedisUtil {
 	private static RedisSerializer<String> keyRedisSerializer;
 	@Autowired
 	private static RedisSerializer<Object> valueRedisSerializer;
-
+	
+	
 	/**
 	 * Key序列化
 	 * 

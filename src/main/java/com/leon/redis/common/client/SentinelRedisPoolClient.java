@@ -9,7 +9,7 @@ import redis.clients.jedis.JedisSentinelPool;
 /**
  * 
  * Redis哨兵Sentinel主从客户端,用于初始化客户端, redis未分片
- * 也可以基于redis分布式做哨兵主从，
+ * 也可以基于redis分片做哨兵主从，
  * 参照https://github.com/warmbreeze/sharded-jedis-sentinel-pool
  * 
  * 配置参数可以提取到properties文件中
@@ -26,22 +26,42 @@ public class SentinelRedisPoolClient {
 			synchronized (isInitRedis) {
 				if (isInitRedis.equals(Boolean.FALSE)) {
 					JedisPoolConfig config = new JedisPoolConfig();
-					config.setMaxTotal(20);
-					config.setMaxIdle(5);
-					config.setMaxWaitMillis(2000);
-					config.setTestOnBorrow(false);
-					int timeout = 2000;
-					String usePassword = "Y";
-					
-					Set<String> sentinels = new HashSet<String>();
-			        sentinels.add("192.168.1.2:26379");
-			        sentinels.add("192.168.1.2:26380");
-			        sentinels.add("192.168.1.2:26381");
-					if ("Y".equals(usePassword)) {
-						jedisSentinelPool = new JedisSentinelPool("mymaster-6379", sentinels, config, timeout, "password");
-					} else {
-						jedisSentinelPool = new JedisSentinelPool("mymaster-6379", sentinels, config, timeout);
+					try {
+						config.setMaxTotal(
+								Integer.parseInt(PropertyReader.getProperty("redis.properties", "client.MaxTotal")));
+						config.setMaxIdle(
+								Integer.parseInt(PropertyReader.getProperty("redis.properties", "client.MaxIdle")));
+						config.setMaxWaitMillis(
+								Integer.parseInt(PropertyReader.getProperty("redis.properties", "client.MaxWaitMillis")));
+						String testOnBorrow = PropertyReader.getProperty("redis.properties", "client.TestOnBorrow");
+						if("true".equals(testOnBorrow)){
+							config.setTestOnBorrow(true);
+						}else{
+							config.setTestOnBorrow(false);
+						}
+						int timeout = Integer.parseInt(PropertyReader.getProperty("redis.properties", "timeout"));
+						String masterName = PropertyReader.getProperty("redis.properties", "mastername");
+						String usePassword = PropertyReader.getProperty("redis.properties", "usePassword");
+						String passWord = PropertyReader.getProperty("redis.properties", "password");
+						String hostPort = PropertyReader.getProperty("redis.properties", "redis-sentinel-hosts");
+						String[] hostAndPort = hostPort.split(";");
+						Set<String> sentinels = new HashSet<String>();
+						for(int i = 0;i < hostAndPort.length;i++){
+							sentinels.add(hostAndPort[i]);
+						}
+						if ("Y".equals(usePassword)) {
+							jedisSentinelPool = new JedisSentinelPool(masterName, sentinels, config, timeout, passWord);
+						} else {
+							jedisSentinelPool = new JedisSentinelPool(masterName, sentinels, config, timeout);
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
+
 					isInitRedis = Boolean.TRUE;
 				}
 			}

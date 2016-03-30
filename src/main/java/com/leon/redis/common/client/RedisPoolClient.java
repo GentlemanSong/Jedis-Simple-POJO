@@ -21,17 +21,36 @@ public class RedisPoolClient {
 			synchronized (isInitRedis) {
 				if (isInitRedis.equals(Boolean.FALSE)) {
 					JedisPoolConfig config = new JedisPoolConfig();
-					config.setMaxTotal(20);
-					config.setMaxIdle(5);
-					config.setMaxWaitMillis(2000);
-					config.setTestOnBorrow(false);
-					int timeout = 2000;
-					int port = 6379;
-					String usePassword = "Y";
-					if ("Y".equals(usePassword)) {
-						jedisPool = new JedisPool(config, "192.168.1.2", port, timeout, "password");
-					} else {
-						jedisPool = new JedisPool(config, "192.168.1.2", port, timeout);
+					try {
+						config.setMaxTotal(
+								Integer.parseInt(PropertyReader.getProperty("redis.properties", "client.MaxTotal")));
+						config.setMaxIdle(
+								Integer.parseInt(PropertyReader.getProperty("redis.properties", "client.MaxIdle")));
+						config.setMaxWaitMillis(
+								Integer.parseInt(PropertyReader.getProperty("redis.properties", "client.MaxWaitMillis")));
+						String testOnBorrow = PropertyReader.getProperty("redis.properties", "client.TestOnBorrow");
+						if("true".equals(testOnBorrow)){
+							config.setTestOnBorrow(true);
+						}else{
+							config.setTestOnBorrow(false);
+						}
+						int timeout = Integer.parseInt(PropertyReader.getProperty("redis.properties", "timeout"));
+						String usePassword = PropertyReader.getProperty("redis.properties", "usePassword");
+						String passWord = PropertyReader.getProperty("redis.properties", "password");
+						String hostPort = PropertyReader.getProperty("redis.properties", "redis-host");
+						System.out.println(hostPort);
+						String[] hostAndPort = hostPort.split(":");
+						if ("Y".equals(usePassword)) {
+							jedisPool = new JedisPool(config, hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, passWord);
+						} else {
+							jedisPool = new JedisPool(config, hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout);
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 					isInitRedis = Boolean.TRUE;
 				}
