@@ -169,7 +169,7 @@ public class RedisUtil {
 	}
 	
 	/**
-	 * 获取单个值
+	 * 获取单个值，非Redis自增自减
 	 * 
 	 * @param key
 	 * @return
@@ -191,16 +191,16 @@ public class RedisUtil {
 	}
 
 	/**
-	 * 获取自增或自减key的值
+	 * 获取Redis自增或自减操作的值，该类操作的值无需序列化
 	 * 
 	 * @param key
 	 * @return
 	 */
-	public static Object getNumber(String key){
-		Object result = null;
+	public static long getInCrDeCrValue(String key) throws Exception{
+		String result = null;
 		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
 		if (jedis == null) {
-			return result;
+			throw new Exception("No value found from Redis, please check");
 		}
 		try {
 			result = jedis.get(key);
@@ -209,7 +209,11 @@ public class RedisUtil {
 		} finally {
 			jedis.close();
 		}
-		return result;
+		if(result!=null){
+			return Long.parseLong(result);
+		} else {
+			throw new Exception("No value found from Redis, please check");
+		}
 	}
 	
 	public static Boolean exists(String key) {

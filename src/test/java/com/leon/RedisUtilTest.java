@@ -41,10 +41,10 @@ public class RedisUtilTest {
 	}
 
 	@Test
-	public void testGetNumber(){
+	public void testGetNumber() throws Exception{
 		//对于自增或自减key的value的获取
 		//通过key获取对应value
-		Object object = RedisUtil.getNumber("testCr");
+		long object = RedisUtil.getInCrDeCrValue("testCr");
 		System.out.println(object);
 		fail("Not yet implemented");
 		//测试通过

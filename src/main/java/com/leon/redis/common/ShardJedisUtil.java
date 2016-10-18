@@ -177,7 +177,7 @@ public class ShardJedisUtil {
 	}
 	
 	/**
-	 * 获取单个值
+	 * 获取单个值，非Redis自增自减
 	 * 
 	 * @param key
 	 * @return
@@ -196,6 +196,32 @@ public class ShardJedisUtil {
 			shardedJedis.close();
 		}
 		return result;
+	}
+	
+	/**
+	 * 获取Redis自增或自减操作的值，该类操作的值无需序列化
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static long getInCrDeCrValue(String key) throws Exception{
+		String result = null;
+		ShardedJedis shardedJedis = ShardedRedisPoolClient.getJedisPoolInstance().getResource();
+		if (shardedJedis == null) {
+			throw new Exception("No value found from Redis, please check");
+		}
+		try {
+			result = shardedJedis.get(key);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			shardedJedis.close();
+		}
+		if(result!=null){
+			return Long.parseLong(result);
+		} else {
+			throw new Exception("No value found from Redis, please check");
+		}
 	}
 
 	public static Boolean exists(String key) {

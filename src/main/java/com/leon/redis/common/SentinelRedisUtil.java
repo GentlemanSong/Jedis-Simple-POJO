@@ -170,7 +170,7 @@ public class SentinelRedisUtil {
 	}
 	
 	/**
-	 * 获取单个值
+	 * 获取单个值，非Redis自增自减
 	 * 
 	 * @param key
 	 * @return
@@ -189,6 +189,32 @@ public class SentinelRedisUtil {
 			jedis.close();
 		}
 		return result;
+	}
+	
+	/**
+	 * 获取Redis自增或自减操作的值，该类操作的值无需序列化
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static long getInCrDeCrValue(String key) throws Exception{
+		String result = null;
+		Jedis jedis = SentinelRedisPoolClient.getJedisPoolInstance().getResource();
+		if (jedis == null) {
+			throw new Exception("No value found from Redis, please check");
+		}
+		try {
+			result = jedis.get(key);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			jedis.close();
+		}
+		if(result!=null){
+			return Long.parseLong(result);
+		} else {
+			throw new Exception("No value found from Redis, please check");
+		}
 	}
 
 	/**
