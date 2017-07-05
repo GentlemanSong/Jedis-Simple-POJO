@@ -44,7 +44,7 @@ public class RedisUtilTest {
 	public void testGetNumber() throws Exception{
 		//对于自增或自减key的value的获取
 		//通过key获取对应value
-		long object = RedisUtil.getInCrDeCrValue("testCr");
+		Object object = RedisUtil.getIncrAndDecrValue("testCr");
 		System.out.println(object);
 		fail("Not yet implemented");
 		//测试通过
@@ -164,10 +164,20 @@ public class RedisUtilTest {
 	@Test
 	public void testIncr() {
 		//返回值为自增后的key的值
-		Long result = RedisUtil.incr("testCr");
-		System.out.println(result);
-		fail("Not yet implemented");
-		//测试通过
+		Long result = RedisUtil.incr("testCr1");
+		System.out.println("incr-testCr:"+result);
+		
+		result = Long.parseLong(String.valueOf(RedisUtil.getIncrAndDecrValue("testCr1")));
+		System.out.println("incr-getIncrAndDecrValue:"+result);
+		
+		String r1 = RedisUtil.setIncrAndDecrValue("IncrAndDecrValue", 100L);
+		System.out.println("incr-getIncrAndDecrValue-r1:"+r1);
+		RedisUtil.incr("IncrAndDecrValue");
+		RedisUtil.incr("IncrAndDecrValue");
+		RedisUtil.decr("IncrAndDecrValue");
+		Long r2 = Long.parseLong(String.valueOf(RedisUtil.getIncrAndDecrValue("IncrAndDecrValue")));
+		System.out.println("incr-getIncrAndDecrValue-r2:"+r2);
+		
 	}
 
 	@Test

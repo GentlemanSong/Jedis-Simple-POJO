@@ -13,10 +13,12 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.leon.redis.common.client.RedisPoolClient;
 import com.leon.redis.serializer.RedisSerializer;
 
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
+import redis.clients.util.SafeEncoder;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -185,6 +187,87 @@ public class RedisUtil {
 		return result;
 	}
 
+	
+	/**
+	 * 
+	 * @Title: getIncrAndDecrValue   
+	 * @Description: 获取自增或自减操作的值，值不需要序列化，value值byte需要用jedis的SafeEncoder转码解码
+	 * @param: @param key
+	 * @param: @return     
+	 * @return: String    
+	 * @throws
+	 */
+	public static Object getIncrAndDecrValue(String key) {
+		Object result = null;
+		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
+		if (jedis == null) {
+			return result;
+		}
+		try {
+			byte[] resultByte = jedis.get(keyRedisSerializer(key));
+			if (null != resultByte) {
+				result = SafeEncoder.encode(resultByte);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			jedis.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @Title: setIncrAndDecrValue   
+	 * @Description: 设置自增或自减操作的值，值不需要序列化，value值byte需要用jedis的SafeEncoder转码解码
+	 * @param: @param key
+	 * @param: @param value
+	 * @param: @return     
+	 * @return: String    
+	 * @throws
+	 */
+	public static String setIncrAndDecrValue(String key, long value) {
+		String result = null;
+		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
+		if (jedis == null) {
+			return result;
+		}
+		try {
+			result = jedis.set(keyRedisSerializer(key), SafeEncoder.encode(String.valueOf(value)));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			jedis.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @Title: setexIncrAndDecrValue   
+	 * @Description: 设置自增或自减操作的值，值不需要序列化，value值byte需要用jedis的SafeEncoder转码解码
+	 * @param: @param key
+	 * @param: @return     
+	 * @return: Object    
+	 * @throws
+	 */
+	public static Object setexIncrAndDecrValue(String key, int seconds, long value) {
+		Object result = null;
+		Jedis jedis = RedisPoolClient.getJedisPoolInstance().getResource();
+		if (jedis == null) {
+			return result;
+		}
+		try {
+			result = jedis.setex(keyRedisSerializer(key), seconds, SafeEncoder.encode(String.valueOf(value)));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			jedis.close();
+		}
+		return result;
+	}
+	
+	
 	public static Boolean exists(String key) {
 		Boolean result = false;
 		Jedis jedis = jedisPool.getResource();
